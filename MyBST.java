@@ -1,34 +1,240 @@
+/**
+ * Name: Anh Bach
+ * Email: tbach@ucsd.edu
+ * Sources used: Oracle, Lecture Slides
+ * 
+ * This file contains a MyBST class, which extends Comparable 
+ * and use key and value to keep track the binary tree. 
+ * Value can be accessed by key 
+ */
 import java.util.ArrayList;
 
-
+/**
+ * This class contains methods to get value, get key
+ * insert, traverse  and remove nodes from binary search tree
+ */
 public class MyBST<K extends Comparable<K>,V>{
     MyBSTNode<K,V> root = null;
     int size = 0;
 
+    /**
+     * Find number of elements in the tree
+     * @return size of the binary tree
+     */
     public int size(){
         return size;
     }
 
+    /**
+     * Insert a new node containing the arguments key and value 
+     * into the binary search tree.
+     * @return value replaced by new value, otherwise null
+     */
     public V insert(K key, V value){
-        // TODO
-        return null;
+        // Exception
+        if (key == null) {
+            throw new NullPointerException();
+        }
+
+        // When the tree is empty, create root 
+        if (this.root == null || size() == 0) {
+            this.root = new MyBSTNode<K,V>(key, value, null);
+            // Update size
+            this.size++;
+            return null;
+        }
+
+        V toReturn;
+        // When the tree is not empty
+        MyBSTNode<K,V> curr = this.root;
+        while (curr != null && curr.getKey() != key) {
+            int result = key.compareTo(curr.key);
+            //Go left
+            if (result < 0) {
+                if (curr.getLeft() == null) {
+                    curr.left = new MyBSTNode<K,V> (key, value, curr);
+                    toReturn = null;
+                    // Update size
+                    this.size++;
+                   return null;
+                }
+                else {
+                    // Set current's left child as current
+                    curr = curr.getLeft();
+                }
+            }
+            //Go right 
+            else {
+                if (curr.getRight() == null) {
+                    curr.right = new MyBSTNode<K,V>(key, value, curr);
+                    toReturn = null;
+                    // Update size
+                    this.size++;
+                    return null;
+                }
+                else {
+                    // Set current's right child as current
+                    curr = curr.getRight();
+                }
+            }
+        }
+        // Replace the value of already existed key
+        toReturn = curr.getValue();
+        curr.setValue(value);
+        return toReturn;
     }
 
+    /**
+     * Search for a node with key equal to key
+     * @return value associated with that node
+     */
     public V search(K key){
-        // TODO
-        return null;
+        // When key is null
+        if (key == null) {
+            return null;
+        }
+        V toReturn = null;
+        // When key is not null
+        MyBSTNode<K,V> curr = this.root;
+        while (curr != null) {
+            int result = key.compareTo(curr.key);
+            // Key is equal to current key
+            if (result == 0) {
+                toReturn = curr.getValue();
+                curr = null; // stop the loop
+            }
+            // Go left
+            else if (result < 0) {
+                curr = curr.getLeft();
+            }
+            // Go right
+            else {
+                curr = curr.getRight();
+            }
+        }
+        return toReturn;
     }
 
+    /**
+     * Search for a node with key equal to key and remove 
+     * from the tree and all references should be fixed
+     * @return value associated with that node
+     */
     public V remove(K key){
-        // TODO
-        return null;
+        // When key is null
+        if (key == null) {
+            return null;
+        }
+
+        V toReturn = null;
+        MyBSTNode<K,V> curr = this.root;
+        MyBSTNode<K,V> parent = null;
+
+        // Search for the key
+        while (curr != null && curr.getKey() != key) {
+            int result = key.compareTo(curr.key);
+            parent = curr;
+            // Go left
+            if (result < 0) {
+                curr = curr.getLeft();
+            }
+            // Go right
+            else {
+                curr = curr.getRight();
+            }
+        }
+        // If key is not found 
+        if (curr == null) {
+            curr = this.root;
+            toReturn = null;
+        }
+         // If key is found 
+        toReturn = curr.getValue();
+
+        // Case 1: node is a leaf
+        if (curr.getRight() == null && curr.getLeft() == null) {
+            if (curr != root) {
+                // If key is left child
+                if (parent.getLeft().equals(curr)) {
+                    parent.setLeft(null);
+                }
+                // If key is right child
+                else {
+                    parent.setRight(null);
+                }
+            }
+            else {
+                root = null;
+            }
+        }
+
+        // Case 2: A node with 2 children
+        if (curr.getRight() != null && curr.getLeft() != null) {
+            MyBSTNode<K,V> successor = curr.successor();
+            V sucValue = successor.getValue();
+            // Copy value data from succesor to curr node
+            curr.setValue(sucValue);
+            // Recursively remove successor 
+            remove(successor.getKey());
+        }
+
+        // Case 3: A node with only 1 child
+        else {
+            // Choose a child node
+            MyBSTNode<K,V> child = (curr.getLeft() != null)? 
+                curr.getLeft(): curr.getRight();
+            // If node is not root, assign to grandparent  
+            if (curr != root) {
+                if (curr.equals(parent.getLeft())) {
+                    parent.setLeft(child);
+                }
+                else {
+                    parent.setRight(child);
+                }
+            }
+            // if node is root, child becomes root 
+            else {
+                root = child;
+            }
+            // Update size 
+            this.size--;
+        }
+        // Return removed value 
+        return toReturn;
     }
     
+    /**
+     * Find in-order traversal of the tree
+     * @return Array of in-order traversal of the tree, 
+     * null if tree is empty
+     */
     public ArrayList<MyBSTNode<K, V>> inorder(){
-        // TODO
-        return null;
+        // When tree is 0, return empty array
+        if (this.root == null || size () == 0) {
+            return new ArrayList<>();
+        }
+
+        ArrayList<MyBSTNode<K, V>> arr = new ArrayList<>();
+        MyBSTNode<K,V> curr = this.root;
+        // Find the smallest node
+        while (curr != null && curr.getLeft() != null) {
+            curr = curr.getLeft();
+        }
+        // Add the smallest node to array
+        arr.add(curr);
+        // Traverse up an find the successor of nodes
+        while (curr.successor() != null) {
+            curr = curr.successor();
+            arr.add(curr);
+        }
+        return arr;
     }
 
+    /**
+     * This class contains methods to access key, value
+     * set key, value and finding predecessor and successor 
+     * of the binary search tree
+     */
     static class MyBSTNode<K,V>{
         private static final String TEMPLATE = "Key: %s, Value: %s";
         private static final String NULL_STR = "null";
@@ -132,36 +338,74 @@ public class MyBST<K extends Comparable<K>,V>{
         }
 
         /**
-         * TODO: add inline comments for this method to demonstrate your
-         *   understanding of this method. The predecessor can be implemented
-         *   in a similar way.
-         *
          * This method returns the in order successor of current node object.
          * It can be served as a helper method when implementing inorder().
          * @return the successor of current node object
          */
         public MyBSTNode<K, V> successor(){
+            // When right child is not null
             if(this.getRight() != null){
+                // Set right child as current node
                 MyBSTNode<K,V> curr = this.getRight();
+                // When current's left child is not null
+                // then traverse the left subtree
                 while(curr.getLeft() != null){
+                    // Set current's left child as current node
                     curr = curr.getLeft();
                 }
                 return curr;
             }
+            // When right child is null
             else{
+                // Create variable parent to hold node's parent
                 MyBSTNode<K,V> parent = this.getParent();
+                // Set the node as current node
                 MyBSTNode<K,V> curr = this;
+                // When parent is not null and current node is 
+                // equal to parent's right child
                 while(parent != null && curr == parent.getRight()){
+                    // Set parent as current
                     curr = parent;
+                    // Move up by set parrent as current parrent node's parent
                     parent = parent.getParent();
                 }
                 return parent;
             }
         }
 
+        /**
+         * This method returns the in order predecessor of current node object.
+         * It can be served as a helper method when implementing inorder().
+         * @return the predecessor of current node object
+         */
         public MyBSTNode<K, V> predecessor(){
-            // TODO
-            return null;
+            // When left child is node null 
+            if (this.getLeft() != null) {
+                // Set left child as current node
+                MyBSTNode<K,V> curr = this.getLeft();
+                // When current's right child is not null then 
+                // traverse the right subtree
+                while(curr.getRight() != null){
+                    // Set current's right child as current node
+                    curr = curr.getRight();
+                }
+                return curr;
+            }
+            else {
+                // Create variable parent to hold node's parent
+                MyBSTNode<K,V> parent = this.getParent();
+                // Set the node as current node
+                MyBSTNode<K,V> curr = this;
+                // When parent is not null and current node is 
+                // equal to parent's left child
+                while(parent != null && curr == parent.getLeft()){
+                    // Set parent as current
+                    curr = parent;
+                    // Move up by set parrent as current parrent node's parent
+                    parent = parent.getParent();
+                }
+                return parent;
+            }
         }
 
         /** This method compares if two node objects are equal.

@@ -1,6 +1,18 @@
+/**
+ * Name: Anh Bach
+ * Email: tbach@ucsd.edu
+ * Sources used: Oracle, Lecture Slides
+ * 
+ * This file contains a MyBSTIterator class that use key and
+ * value to keep track the binary tree. Value can be accessed by key 
+ */
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * This class contains methods to iterate the binary search tree
+ * and extends MyBST
+ */
 public class MyBSTIterator<K extends Comparable<K>, V> extends MyBST<K, V> {
     abstract class MyBSTNodeIterator<T> implements Iterator<T> {
         MyBSTNode<K, V> next;
@@ -26,26 +38,43 @@ public class MyBSTIterator<K extends Comparable<K>, V> extends MyBST<K, V> {
             return next != null;
         }
 
+        /**
+         * Advances the iterator to the next node 
+         * @return the node we advanced (/visited)
+         */
         MyBSTNode<K, V> nextNode() {
-            // TODO
-            return null;
+            // Exception 
+            if (next == null) {
+                throw new NoSuchElementException();
+            }
+            
+            // lastVisited should be updated to point to the node 
+            // that next previously pointed to
+            lastVisited = next;
+            // Next should be updated to point to the inorder successor
+            next = next.successor();
+
+            return lastVisited;
         }
 
         /**
-         * TODO: add inline comments for this method to demonstrate your
-         *   understanding of this method.
-         *
          * This method removes the last visited node from the tree.
          */
         public void remove() {
+            // If last visited node is null then
+            // throw an exception
             if (lastVisited == null) {
                 throw new IllegalStateException();
             }
+            // If last visited node has 2 children
+            // then set next node = last visited node
             if (lastVisited.getRight() != null &&
                     lastVisited.getLeft() != null) {
                 next = lastVisited;
             }
+            // Recursively remove last visited node's key
             MyBSTIterator.this.remove(lastVisited.getKey());
+            // Set last visited node to null to stop the recursion
             lastVisited = null;
         }
     }
